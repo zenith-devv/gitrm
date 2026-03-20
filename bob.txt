@@ -1,8 +1,0 @@
-bob (build orchestrator binary) (idea 19.03.2026)
-
-an all-in-one build helper program which can be used to compile projects to executable written in many supported languages
-
-bob build - build project and parse bob.json (flags, compiler to use)
-bob check - check compilers installed on computer (supported langs by bob)
-bob git-clone - clone repo and read bob.json if exists
-bob make-json - create a basic bob.json to be filled with necessary data
