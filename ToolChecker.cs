@@ -2,7 +2,7 @@ using static CommandRunner;
 using static Logger;
 using static Logger.MessageType;
 
-public static class Checker
+public static class ToolChecker
 {
     public static void Check()
     {
