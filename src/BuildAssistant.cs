@@ -14,10 +14,10 @@ public static class BuildAssistant
     private static readonly List<IBuilder> Builders =
     [
         new CsBuilder(),
-        //new GccBuilder();
+        new GccBuilder(),
         new RustBuilder(),
-        //new GoBuilder(),
-        //new JavaBuilder();
+        new GoBuilder(),
+        new JavaBuilder(),
     ];
 
     public static void Build()
