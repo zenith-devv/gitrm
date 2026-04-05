@@ -23,7 +23,11 @@ public static class BuildAssistant
     public static void Build()
     {
         var config = JsonHandler.LoadConfig();
-        if (config == null || string.IsNullOrEmpty(config.MainFile)) 
+
+        if (config == null)
+            return;
+            
+        if (string.IsNullOrEmpty(config.MainFile)) 
         {
             Log(Err, "MainFile is missing in bob-config.json\n");
             return;

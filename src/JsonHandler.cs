@@ -38,9 +38,9 @@ public static class JsonHandler
             string jsonString = File.ReadAllText(FileName);
             return JsonSerializer.Deserialize<ProjectConfig>(jsonString);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Log(Err, ex.Message+'\n');
+            Log(Err, "invalid json format in bob-config.json\n");
             return null;
         }
     }
