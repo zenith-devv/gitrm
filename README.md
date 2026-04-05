@@ -24,9 +24,9 @@ Based on that bob will run `dotnet publish bob.csproj -c Release -r linux-x64 --
 ## Supported languages
 * **C#** (.NET)
 * **Rust** (Cargo)
-* (planned) **C/C++** (GCC including build systems like Make, CMake, Meson)
-* (planned) **Golang**
-* (planned) **Java**
+* **C/C++** (GCC/G++ compiling currently supported but build system files detection will be added soon)
+* **Golang**
+* **Java**
 ## Setup
 To compile bob, run `dotnet publish bob.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true`. Then add the output binary to your system `PATH`. 
 ## Available commands
