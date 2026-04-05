@@ -5,85 +5,111 @@ on:
     branches: [ main ]
 
 env:
-  DOTNET_VERSION: '10.0'
+  DOTNET_VERSION: '10.0.x'
   PROJECT_FILE: 'bob.csproj'
-  BINARY_NAME: 'bob'
 
 jobs:
   # ─────────────────────────────────────────────
-  # 1. RESTORE — pobierz i zweryfikuj dependencies
+  # 1. RESTORE
   # ─────────────────────────────────────────────
   restore:
     name: Restore dependencies
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup .NET ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
       - name: Restore NuGet packages
         run: dotnet restore ${{ env.PROJECT_FILE }}
 
   # ─────────────────────────────────────────────
-  # 2. BUILD — kompiluj dla x86_64 i arm64
+  # 2. BUILD — 6 platform × 2 warianty = 12 binary
   # ─────────────────────────────────────────────
   build:
-    name: Build (${{ matrix.rid }})
+    name: Build ${{ matrix.rid }} [${{ matrix.variant }}]
     runs-on: ubuntu-latest
     needs: restore
 
     strategy:
       fail-fast: false
       matrix:
+        rid:
+          - linux-x64
+          - linux-arm64
+          - win-x64
+          - win-arm64
+          - osx-x64
+          - osx-arm64
+        variant:
+          - self-contained
+          - binary-only
         include:
           - rid: linux-x64
-            label: x86_64
+            ext: ""
           - rid: linux-arm64
-            label: arm64
+            ext: ""
+          - rid: win-x64
+            ext: ".exe"
+          - rid: win-arm64
+            ext: ".exe"
+          - rid: osx-x64
+            ext: ""
+          - rid: osx-arm64
+            ext: ""
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup .NET ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
       - name: Restore NuGet packages
         run: dotnet restore ${{ env.PROJECT_FILE }}
 
-      - name: Publish — ${{ matrix.label }}
+      # self-contained: runtime w środku, trimmed (~15-20 MB)
+      - name: Publish — self-contained
+        if: matrix.variant == 'self-contained'
         run: |
           dotnet publish ${{ env.PROJECT_FILE }} \
             -c Release \
             -r ${{ matrix.rid }} \
             --self-contained true \
             -p:PublishSingleFile=true \
-            -o dist/${{ matrix.rid }}
+            -p:PublishTrimmed=true \
+            -o dist/${{ matrix.rid }}/self-contained
 
-      # Zmień nazwę binary na bob-<arch> żeby artefakty się nie nadpisywały
-      - name: Rename binary
+      # binary-only: wymaga .NET na systemie (~100 KB)
+      - name: Publish — binary-only
+        if: matrix.variant == 'binary-only'
         run: |
-          mv dist/${{ matrix.rid }}/${{ env.BINARY_NAME }} \
-             dist/${{ matrix.rid }}/${{ env.BINARY_NAME }}-${{ matrix.rid }}
-          chmod +x dist/${{ matrix.rid }}/${{ env.BINARY_NAME }}-${{ matrix.rid }}
+          dotnet publish ${{ env.PROJECT_FILE }} \
+            -c Release \
+            -r ${{ matrix.rid }} \
+            --self-contained false \
+            -p:PublishSingleFile=true \
+            -o dist/${{ matrix.rid }}/binary-only
 
-      - name: Upload build artifact
+      # Zmień nazwę na bob-<rid>-<variant>[.exe] żeby artefakty się nie nadpisywały
+      - name: Rename binary
+        shell: bash
+        run: |
+          SRC="dist/${{ matrix.rid }}/${{ matrix.variant }}/bob${{ matrix.ext }}"
+          DST="dist/bob-${{ matrix.rid }}-${{ matrix.variant }}${{ matrix.ext }}"
+          mv "$SRC" "$DST"
+          chmod +x "$DST" || true
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.BINARY_NAME }}-${{ matrix.rid }}
-          path: dist/${{ matrix.rid }}/${{ env.BINARY_NAME }}-${{ matrix.rid }}
+          name: bob-${{ matrix.rid }}-${{ matrix.variant }}
+          path: dist/bob-${{ matrix.rid }}-${{ matrix.variant }}${{ matrix.ext }}
           if-no-files-found: error
           retention-days: 7
 
   # ─────────────────────────────────────────────
-  # 3. TEST — smoke testy na x64 binary
+  # 3. TEST — smoke testy (linux-x64, dotnet run)
   # ─────────────────────────────────────────────
   test:
     name: Smoke tests
@@ -91,38 +117,34 @@ jobs:
     needs: build
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup .NET ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
       - name: Restore NuGet packages
         run: dotnet restore ${{ env.PROJECT_FILE }}
 
-      # Testy uruchamiane przez dotnet run (nie wymaga gotowego binary)
       - name: Test — brak argumentów wyświetla help
         run: |
           OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- 2>&1)
           echo "$OUTPUT"
           echo "$OUTPUT" | grep -q "usage: bob" \
-            || (echo "FAIL: brak linii 'usage: bob' w helpie" && exit 1)
+            || (echo "FAIL: brak 'usage: bob'" && exit 1)
 
       - name: Test — komenda info zwraca wersję
         run: |
           OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- info 2>&1)
           echo "$OUTPUT"
           echo "$OUTPUT" | grep -q "build orchestrator binary" \
-            || (echo "FAIL: brak napisu 'build orchestrator binary' w info" && exit 1)
+            || (echo "FAIL: brak 'build orchestrator binary'" && exit 1)
 
       - name: Test — nieznana komenda loguje błąd
         run: |
           OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- definitely-not-a-command 2>&1)
           echo "$OUTPUT"
           echo "$OUTPUT" | grep -q "unknown command" \
-            || (echo "FAIL: brak komunikatu 'unknown command'" && exit 1)
+            || (echo "FAIL: brak 'unknown command'" && exit 1)
 
       - name: Test — config tworzy bob-config.json
         run: |
@@ -130,7 +152,6 @@ jobs:
           dotnet run --project ${{ github.workspace }}/${{ env.PROJECT_FILE }} -- config
           [ -f bob-config.json ] \
             || (echo "FAIL: bob-config.json nie został stworzony" && exit 1)
-          cat bob-config.json
           echo "OK: bob-config.json istnieje"
 
       - name: Test — fetch bez URL zwraca błąd
@@ -141,7 +162,7 @@ jobs:
             || (echo "FAIL: brak komunikatu o braku URL" && exit 1)
 
   # ─────────────────────────────────────────────
-  # 4. RELEASE — tag + GitHub Release z binary
+  # 4. RELEASE — tag + GitHub Release ze wszystkimi 12 binary
   # ─────────────────────────────────────────────
   release:
     name: Publish release
@@ -149,36 +170,27 @@ jobs:
     needs: [ build, test ]
 
     permissions:
-      contents: write   # potrzebne do tworzenia tagów i releases
+      contents: write
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # pełna historia potrzebna do git tag
+          fetch-depth: 0
 
-      - name: Download artifact — linux-x64
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.BINARY_NAME }}-linux-x64
           path: release-assets/
+          merge-multiple: true
 
-      - name: Download artifact — linux-arm64
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.BINARY_NAME }}-linux-arm64
-          path: release-assets/
-
-      - name: Verify release assets
+      - name: List release assets
         run: ls -lah release-assets/
 
       - name: Generate tag name
         id: tag
         run: |
-          # Format: v0.2-alpha.build.<numer runu>
           TAG="v0.2-alpha.build.${{ github.run_number }}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Generated tag: $TAG"
 
       - name: Push tag
         run: |
@@ -192,24 +204,44 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: "bob ${{ steps.tag.outputs.tag }}"
+          prerelease: true
+          generate_release_notes: true
           body: |
             ## bob — build orchestrator binary
 
-            Automatyczny release wygenerowany przez GitHub Actions z commitu `${{ github.sha }}`.
+            Automatyczny release z commitu `${{ github.sha }}`.
 
-            ### Pobieranie
-            | Architektura | Plik |
-            |---|---|
-            | Linux x86_64 | `bob-linux-x64` |
-            | Linux ARM64  | `bob-linux-arm64` |
+            ### Warianty
+            | Wariant | Opis | Rozmiar |
+            |---|---|---|
+            | `self-contained` | runtime .NET w środku, działa bez instalacji | ~15-20 MB |
+            | `binary-only` | wymaga .NET zainstalowanego na systemie | ~100 KB |
 
-            ### Instalacja
+            ### Pliki
+            | System | Arch | self-contained | binary-only |
+            |---|---|---|---|
+            | Linux   | x64   | `bob-linux-x64-self-contained`     | `bob-linux-x64-binary-only`     |
+            | Linux   | arm64 | `bob-linux-arm64-self-contained`   | `bob-linux-arm64-binary-only`   |
+            | Windows | x64   | `bob-win-x64-self-contained.exe`   | `bob-win-x64-binary-only.exe`   |
+            | Windows | arm64 | `bob-win-arm64-self-contained.exe` | `bob-win-arm64-binary-only.exe` |
+            | macOS   | x64   | `bob-osx-x64-self-contained`       | `bob-osx-x64-binary-only`       |
+            | macOS   | arm64 | `bob-osx-arm64-self-contained`     | `bob-osx-arm64-binary-only`     |
+
+            ### Instalacja (Linux/macOS)
             ```bash
-            chmod +x bob-linux-x64
-            sudo mv bob-linux-x64 /usr/local/bin/bob
+            chmod +x bob-linux-x64-self-contained
+            sudo mv bob-linux-x64-self-contained /usr/local/bin/bob
             ```
           files: |
-            release-assets/bob-linux-x64
-            release-assets/bob-linux-arm64
-          prerelease: true
-          generate_release_notes: true
+            release-assets/bob-linux-x64-self-contained
+            release-assets/bob-linux-arm64-self-contained
+            release-assets/bob-win-x64-self-contained.exe
+            release-assets/bob-win-arm64-self-contained.exe
+            release-assets/bob-osx-x64-self-contained
+            release-assets/bob-osx-arm64-self-contained
+            release-assets/bob-linux-x64-binary-only
+            release-assets/bob-linux-arm64-binary-only
+            release-assets/bob-win-x64-binary-only.exe
+            release-assets/bob-win-arm64-binary-only.exe
+            release-assets/bob-osx-x64-binary-only
+            release-assets/bob-osx-arm64-binary-only
