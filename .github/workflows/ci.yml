@@ -135,9 +135,9 @@ jobs:
           echo "$OUTPUT" | grep -q "usage: bob" \
             || (echo "FAIL: brak 'usage: bob'" && exit 1)
 
-      - name: Test — komenda info zwraca wersję
+      - name: Test — komenda version zwraca wersję
         run: |
-          OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- info 2>&1)
+          OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- version 2>&1)
           echo "$OUTPUT"
           echo "$OUTPUT" | grep -q "build orchestrator binary" \
             || (echo "FAIL: brak 'build orchestrator binary'" && exit 1)

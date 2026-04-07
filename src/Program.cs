@@ -31,7 +31,7 @@ public class Program
                 JsonHandler.CreateTemplate();
                 break;
             case "version":
-                DisplayInfo();
+                DisplayVersion();
                 break;
             default:
                 Log(Err, $"unknown command: {command}\n");
@@ -49,9 +49,9 @@ public class Program
         Console.WriteLine("version : display bob version");
     }
 
-    private static void DisplayInfo()
+    private static void DisplayVersion()
     {
-        Console.WriteLine("bob (build orchestrator binary) version 0.4-alpha");
+        Console.WriteLine("bob (build orchestrator binary) version 0.4.1-alpha");
         Console.WriteLine("copyright (c) 2026 Michael Zenith");
         Console.WriteLine("licensed under MIT license");
     }
