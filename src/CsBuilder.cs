@@ -23,7 +23,7 @@ public class CsBuilder : IBuilder
 
         string outPath = string.IsNullOrWhiteSpace(config.OutputFile) ? "publish" : config.OutputFile;
         string cmd = "dotnet";
-        string args = $"publish {targetProject} {config.CompilerFlags} -o {outPath} -v d".Trim();
+        string args = $"publish {targetProject} {config.CompilerFlags} -o {outPath}".Trim();
         Log(Default, $"running \"{cmd} {args}\"\n");
         int result = CommandRunner.Run(cmd, args);
 

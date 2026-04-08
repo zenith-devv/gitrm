@@ -22,7 +22,7 @@ public class GccBuilder : IBuilder
         Log(Default, $"{compiler} is present\n");
 
         string outFile = string.IsNullOrWhiteSpace(config.OutputFile) ? "a.out" : config.OutputFile;
-        string args = $"{config.MainFile} -o {outFile} {config.CompilerFlags} -v".Trim();
+        string args = $"{config.MainFile} -o {outFile} {config.CompilerFlags}".Trim();
 
         Log(Default, $"running \"{compiler} {args}\"\n");
         int result = CommandRunner.Run(compiler, args);

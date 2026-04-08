@@ -28,14 +28,14 @@ public class GoBuilder : IBuilder
             string outputFlag = string.IsNullOrWhiteSpace(config.OutputFile)
                 ? ""
                 : $"-o {config.OutputFile}";
-            args = $"build {outputFlag} {config.CompilerFlags} ./... -v".Trim();
+            args = $"build {outputFlag} {config.CompilerFlags} ./...".Trim();
             outPath = string.IsNullOrWhiteSpace(config.OutputFile) ? "." : config.OutputFile;
         }
         else
         {
             // single .go file
             string outFile = string.IsNullOrWhiteSpace(config.OutputFile) ? "app.out" : config.OutputFile;
-            args = $"build -o {outFile} {config.CompilerFlags} {config.MainFile} -v".Trim();
+            args = $"build -o {outFile} {config.CompilerFlags} {config.MainFile}".Trim();
             outPath = outFile;
             Log(Warn, "single file build. for better dependency management use go.mod\n");
         }

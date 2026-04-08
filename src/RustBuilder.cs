@@ -27,7 +27,7 @@ public class RustBuilder : IBuilder
             string outputFlag = string.IsNullOrWhiteSpace(config.OutputFile) 
                 ? "" 
                 : $"--target-dir {config.OutputFile}";
-            args = $"build {outputFlag} {config.CompilerFlags} -vv".Trim();
+            args = $"build {outputFlag} {config.CompilerFlags}".Trim();
             
             if (!string.IsNullOrWhiteSpace(config.OutputFile))
                 outPath = config.OutputFile;

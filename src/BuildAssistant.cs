@@ -18,6 +18,7 @@ public static class BuildAssistant
         new GoBuilder(),
         new JavaBuilder(),
         new MesonBuilder(),
+        new CmakeBuilder(),
     ];
 
     public static void Build()

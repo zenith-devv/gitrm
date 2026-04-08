@@ -20,11 +20,20 @@ Example of a bob-config.json file for .NET project:
 ```
 Based on that bob will run `dotnet publish bob.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -v d -o dist`. Note that if you leave the OutputFile field empty, bob will automatically specify the default name for the built binary.
 
+If the project has a build system, bob-config.json example structure looks like this:
+```
+{
+  "CompilerFlags": "-D CMAKE_BUILD_TYPE=Release",
+  "MainFile": "CMakeLists.txt",
+  "OutputFile": "build"
+}
+```
+
 **note:** bob is still in early development and many features are missing.
 ## Supported languages
 * **C#** (.NET)
 * **Rust** (Cargo)
-* **C/C++** (GCC/G++ and Meson build system currently supported)
+* **C/C++** (GCC/G++ including Meson and CMake)
 * **Golang**
 * **Java**
 ## Setup
