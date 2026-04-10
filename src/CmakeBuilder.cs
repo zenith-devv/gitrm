@@ -9,7 +9,7 @@ public class CmakeBuilder : IBuilder
 
     public void Build(ProjectConfig config)
     {
-        Log(Default, $"{Name} project detected\n");
+        Log(Default, $"{Name} build system detected\n");
 
         if (CommandRunner.RunQuiet("cmake", "--version") != 0)
         {
@@ -20,7 +20,7 @@ public class CmakeBuilder : IBuilder
 
         string buildDir = string.IsNullOrWhiteSpace(config.OutputFile) ? "build" : config.OutputFile;
 
-        Log(Default, $"running \"cmake -S . -B {buildDir} {config.CompilerFlags}\n");
+        Log(Default, $"running \"cmake -S . -B {buildDir} {config.CompilerFlags}\"\n");
         int setupRes = CommandRunner.Run("cmake", $"-S . -B {buildDir} {config.CompilerFlags}");
         if (setupRes != 0)
         {

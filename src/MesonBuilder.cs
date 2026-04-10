@@ -9,7 +9,7 @@ public class MesonBuilder : IBuilder
 
     public void Build(ProjectConfig config)
     {
-        Log(Default, $"{Name} project detected\n");
+        Log(Default, $"{Name} build system detected\n");
 
         if (CommandRunner.RunQuiet("meson", "--version") != 0)
         {
