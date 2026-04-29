@@ -51,7 +51,7 @@ public class Program
 
     private static void DisplayVersion()
     {
-        Console.WriteLine("bob (build orchestrator binary) version 0.5.1-alpha");
+        Console.WriteLine("bob (build orchestrator binary) version 0.5.2-alpha");
         Console.WriteLine("copyright (c) 2026 Michael Zenith");
         Console.WriteLine("licensed under MIT license");
     }

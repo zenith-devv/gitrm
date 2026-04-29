@@ -6,7 +6,8 @@ public static class Logger
         Done,
         Info,
         Warn,
-        Err
+        Err,
+        Debug
     }
 
     public static void Log(MessageType type, string message)
@@ -14,28 +15,31 @@ public static class Logger
         switch (type)
         {
             case MessageType.Default:
-                PrintLabel("bob", ConsoleColor.Blue);
+                PrintLabel("*", ConsoleColor.Blue);
                 break;
             case MessageType.Done:
-                PrintLabel("done", ConsoleColor.Green);
+                PrintLabel("+", ConsoleColor.Green);
                 break;
             case MessageType.Info:
-                PrintLabel("info", ConsoleColor.White);
+                PrintLabel("i", ConsoleColor.White);
                 break;
             case MessageType.Warn:
-                PrintLabel("warn", ConsoleColor.Yellow);
+                PrintLabel("!", ConsoleColor.Yellow);
                 break;
             case MessageType.Err:
-                PrintLabel("err", ConsoleColor.Red);
+                PrintLabel("!", ConsoleColor.Red);
+                break;
+            case MessageType.Debug:
+                PrintLabel("x", ConsoleColor.Gray);
                 break;
         }
         Console.Write(message);
     }
 
-    public static void PrintLabel(string text, ConsoleColor color)
+    public static void PrintLabel(string mark, ConsoleColor color)
     {
         Console.ForegroundColor = color;
-        Console.Write("["+text+"]");
+        Console.Write("["+mark+"]");
         Console.ResetColor();
         Console.Write(" ");
     }
