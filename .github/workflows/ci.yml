@@ -132,34 +132,34 @@ jobs:
         run: |
           OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- 2>&1)
           echo "$OUTPUT"
-          echo "$OUTPUT" | grep -q "usage: gitrm" \
-            || (echo "FAIL: brak 'usage: gitrm'" && exit 1)
+          echo "$OUTPUT" | grep -q "Usage: gitrm" \
+            || (echo "FAIL: brak 'Usage: gitrm'" && exit 1)
 
       - name: Test — komenda version zwraca wersję
         run: |
           OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- version 2>&1)
           echo "$OUTPUT"
-          echo "$OUTPUT" | grep -q "build orchestrator binary" \
-            || (echo "FAIL: brak 'build orchestrator binary'" && exit 1)
+          echo "$OUTPUT" | grep -q "git repo manager" \
+            || (echo "FAIL: brak 'git repo manager'" && exit 1)
 
       - name: Test — nieznana komenda loguje błąd
         run: |
           OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- definitely-not-a-command 2>&1)
           echo "$OUTPUT"
-          echo "$OUTPUT" | grep -q "unknown command" \
-            || (echo "FAIL: brak 'unknown command'" && exit 1)
+          echo "$OUTPUT" | grep -q "Unknown command" \
+            || (echo "FAIL: brak 'Unknown command'" && exit 1)
 
-      - name: Test — config tworzy gitrm-config.json
+      - name: Test — config tworzy gitrm.yaml
         run: |
           cd /tmp
           dotnet run --project ${{ github.workspace }}/${{ env.PROJECT_FILE }} -- config
-          [ -f gitrm-config.json ] \
-            || (echo "FAIL: gitrm-config.json nie został stworzony" && exit 1)
-          echo "OK: gitrm-config.json istnieje"
+          [ -f gitrm.yaml ] \
+            || (echo "FAIL: gitrm.yaml nie został stworzony" && exit 1)
+          echo "OK: gitrm.yaml istnieje"
 
-      - name: Test — fetch bez URL zwraca błąd
+      - name: Test — clone bez URL zwraca błąd
         run: |
-          OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- fetch 2>&1)
+          OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- clone 2>&1)
           echo "$OUTPUT"
           echo "$OUTPUT" | grep -q "url not specified" \
             || (echo "FAIL: brak komunikatu o braku URL" && exit 1)

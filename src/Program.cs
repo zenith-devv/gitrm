@@ -34,7 +34,7 @@ public class Program
                 DisplayVersion();
                 break;
             default:
-                Log(Err, $"unknown command: {command}\n");
+                Log(Err, $"Unknown command: {command}\n");
                 break;
         }
     }
