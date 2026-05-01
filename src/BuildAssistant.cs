@@ -26,7 +26,7 @@ public static class BuildAssistant
         {
             if (string.IsNullOrEmpty(config.Build.MainFile)) 
             {
-                Log(Err, "MainFile is missing in bob-config.json and no build system detected\n");
+                Log(Err, "mainFile is missing in gitrm.yaml and no build system detected\n");
                 return;
             }
 

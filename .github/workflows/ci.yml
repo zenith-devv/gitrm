@@ -6,7 +6,7 @@ on:
 
 env:
   DOTNET_VERSION: '10.0.x'
-  PROJECT_FILE: 'bob.csproj'
+  PROJECT_FILE: 'gitrm.csproj'
 
 jobs:
   # ─────────────────────────────────────────────
@@ -93,20 +93,20 @@ jobs:
             -p:PublishSingleFile=true \
             -o dist/${{ matrix.rid }}/binary-only
 
-      # Zmień nazwę na bob-<rid>-<variant>[.exe] żeby artefakty się nie nadpisywały
+      # Zmień nazwę na gitrm-<rid>-<variant>[.exe] żeby artefakty się nie nadpisywały
       - name: Rename binary
         shell: bash
         run: |
-          SRC="dist/${{ matrix.rid }}/${{ matrix.variant }}/bob${{ matrix.ext }}"
-          DST="dist/bob-${{ matrix.rid }}-${{ matrix.variant }}${{ matrix.ext }}"
+          SRC="dist/${{ matrix.rid }}/${{ matrix.variant }}/gitrm${{ matrix.ext }}"
+          DST="dist/gitrm-${{ matrix.rid }}-${{ matrix.variant }}${{ matrix.ext }}"
           mv "$SRC" "$DST"
           chmod +x "$DST" || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bob-${{ matrix.rid }}-${{ matrix.variant }}
-          path: dist/bob-${{ matrix.rid }}-${{ matrix.variant }}${{ matrix.ext }}
+          name: gitrm-${{ matrix.rid }}-${{ matrix.variant }}
+          path: dist/gitrm-${{ matrix.rid }}-${{ matrix.variant }}${{ matrix.ext }}
           if-no-files-found: error
           retention-days: 7
 
@@ -132,8 +132,8 @@ jobs:
         run: |
           OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- 2>&1)
           echo "$OUTPUT"
-          echo "$OUTPUT" | grep -q "usage: bob" \
-            || (echo "FAIL: brak 'usage: bob'" && exit 1)
+          echo "$OUTPUT" | grep -q "usage: gitrm" \
+            || (echo "FAIL: brak 'usage: gitrm'" && exit 1)
 
       - name: Test — komenda version zwraca wersję
         run: |
@@ -149,13 +149,13 @@ jobs:
           echo "$OUTPUT" | grep -q "unknown command" \
             || (echo "FAIL: brak 'unknown command'" && exit 1)
 
-      - name: Test — config tworzy bob-config.json
+      - name: Test — config tworzy gitrm-config.json
         run: |
           cd /tmp
           dotnet run --project ${{ github.workspace }}/${{ env.PROJECT_FILE }} -- config
-          [ -f bob-config.json ] \
-            || (echo "FAIL: bob-config.json nie został stworzony" && exit 1)
-          echo "OK: bob-config.json istnieje"
+          [ -f gitrm-config.json ] \
+            || (echo "FAIL: gitrm-config.json nie został stworzony" && exit 1)
+          echo "OK: gitrm-config.json istnieje"
 
       - name: Test — fetch bez URL zwraca błąd
         run: |
@@ -206,11 +206,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
-          name: "bob ${{ steps.tag.outputs.tag }}"
+          name: "gitrm ${{ steps.tag.outputs.tag }}"
           prerelease: true
           generate_release_notes: true
           body: |
-            ## bob — build orchestrator binary
+            ## gitrm — build orchestrator binary
 
             Automatyczny release z commitu `${{ github.sha }}`.
 
@@ -223,28 +223,28 @@ jobs:
             ### Pliki
             | System | Arch | self-contained | binary-only |
             |---|---|---|---|
-            | Linux   | x64   | `bob-linux-x64-self-contained`     | `bob-linux-x64-binary-only`     |
-            | Linux   | arm64 | `bob-linux-arm64-self-contained`   | `bob-linux-arm64-binary-only`   |
-            | Windows | x64   | `bob-win-x64-self-contained.exe`   | `bob-win-x64-binary-only.exe`   |
-            | Windows | arm64 | `bob-win-arm64-self-contained.exe` | `bob-win-arm64-binary-only.exe` |
-            | macOS   | x64   | `bob-osx-x64-self-contained`       | `bob-osx-x64-binary-only`       |
-            | macOS   | arm64 | `bob-osx-arm64-self-contained`     | `bob-osx-arm64-binary-only`     |
+            | Linux   | x64   | `gitrm-linux-x64-self-contained`     | `gitrm-linux-x64-binary-only`     |
+            | Linux   | arm64 | `gitrm-linux-arm64-self-contained`   | `gitrm-linux-arm64-binary-only`   |
+            | Windows | x64   | `gitrm-win-x64-self-contained.exe`   | `gitrm-win-x64-binary-only.exe`   |
+            | Windows | arm64 | `gitrm-win-arm64-self-contained.exe` | `gitrm-win-arm64-binary-only.exe` |
+            | macOS   | x64   | `gitrm-osx-x64-self-contained`       | `gitrm-osx-x64-binary-only`       |
+            | macOS   | arm64 | `gitrm-osx-arm64-self-contained`     | `gitrm-osx-arm64-binary-only`     |
 
             ### Instalacja (Linux/macOS)
             ```bash
-            chmod +x bob-linux-x64-self-contained
-            sudo mv bob-linux-x64-self-contained /usr/local/bin/bob
+            chmod +x gitrm-linux-x64-self-contained
+            sudo mv gitrm-linux-x64-self-contained /usr/local/bin/gitrm
             ```
           files: |
-            release-assets/bob-linux-x64-self-contained
-            release-assets/bob-linux-arm64-self-contained
-            release-assets/bob-win-x64-self-contained.exe
-            release-assets/bob-win-arm64-self-contained.exe
-            release-assets/bob-osx-x64-self-contained
-            release-assets/bob-osx-arm64-self-contained
-            release-assets/bob-linux-x64-binary-only
-            release-assets/bob-linux-arm64-binary-only
-            release-assets/bob-win-x64-binary-only.exe
-            release-assets/bob-win-arm64-binary-only.exe
-            release-assets/bob-osx-x64-binary-only
-            release-assets/bob-osx-arm64-binary-only
+            release-assets/gitrm-linux-x64-self-contained
+            release-assets/gitrm-linux-arm64-self-contained
+            release-assets/gitrm-win-x64-self-contained.exe
+            release-assets/gitrm-win-arm64-self-contained.exe
+            release-assets/gitrm-osx-x64-self-contained
+            release-assets/gitrm-osx-arm64-self-contained
+            release-assets/gitrm-linux-x64-binary-only
+            release-assets/gitrm-linux-arm64-binary-only
+            release-assets/gitrm-win-x64-binary-only.exe
+            release-assets/gitrm-win-arm64-binary-only.exe
+            release-assets/gitrm-osx-x64-binary-only
+            release-assets/gitrm-osx-arm64-binary-only
