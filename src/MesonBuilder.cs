@@ -16,23 +16,22 @@ public class MesonBuilder : IBuilder
             Log(Err, "meson is not installed or not in PATH, unable to build\n");
             return;
         }
-        Log(Default, "meson is present\n");
 
-        string buildDir = string.IsNullOrWhiteSpace(config.OutputFile) ? "build" : config.OutputFile;
+        string buildDir = string.IsNullOrWhiteSpace(config.Build.OutputPath) ? "build" : config.Build.OutputPath;
 
-        Log(Default, $"running \"meson setup {config.CompilerFlags} {buildDir}\"\n");
-        int setupRes = CommandRunner.Run("meson", $"setup {config.CompilerFlags} {buildDir}");
+        Log(Default, $"Running \"meson setup {config.Build.Flags} {buildDir}\"\n");
+        int setupRes = CommandRunner.Run("meson", $"setup {config.Build.Flags} {buildDir}");
         if (setupRes != 0)
         {
-            Log(Err, $"project setup failed. (exit code {setupRes})\n");
+            Log(Err, $"Project setup failed. (exit code {setupRes})\n");
             return;
         }
 
-        Log(Default, $"running \"meson compile -C {buildDir}\"\n");
+        Log(Default, $"Running \"meson compile -C {buildDir}\"\n");
         int compileRes = CommandRunner.Run("meson", $"compile -C {buildDir}");
         if (compileRes == 0)
-            Log(Done, $"build finished successfully. output located in {buildDir}\n");
+            Log(Done, $"Build finished successfully. Output located in {buildDir}\n");
         else
-            Log(Err, $"project build failed. (exit code {compileRes})\n");
+            Log(Err, $"Project build failed. (exit code {compileRes})\n");
     }
 }

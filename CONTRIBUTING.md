@@ -1,11 +1,11 @@
-# Contributing to bob (build orchestrator binary)
+# Contributing to gitrm
 
-First of all, thank you for considering contributing to bob! This project aims to stay simple (KISS) and efficient, and your help is much appreciated.
+First of all, thank you for considering contributing to gitrm! This project aims to stay simple (KISS) and efficient, and your help is much appreciated.
 
 ## How can I help?
 
 ### Testing
-The easiest way to help is to use bob on your system (Linux is recommended) and report any bugs in the **Issues** tab.
+The easiest way to help is to use gitrm on your system (Linux is recommended) and report any bugs in the **Issues** tab.
 
 ### Adding New Builders
 If you want to add support for a new language (e.g., Go, Java, Zig):
@@ -21,7 +21,6 @@ If you want to add support for a new language (e.g., Go, Java, Zig):
    - Run `dotnet build` to compile the project.
    - Run `dotnet run -- build` to test the build logic on a sample project.
 5. **Style:** Keep the code simple. We prefer readable "Basic C#" over complex design patterns.
-6. **Log messages:** Follow the convention of **lowercase** bob logger messages, e.g. `[bob] cargo is present`. 
 
 ## Submitting Changes
 

@@ -27,7 +27,7 @@ public static class CommandRunner
         }
         catch (Exception ex)
         {
-            Log(Err, $"could not start process: {ex.Message}\n");
+            Log(Err, $"Could not start process: {ex.Message}\n");
             return -1;
         }
     }

@@ -16,23 +16,22 @@ public class CmakeBuilder : IBuilder
             Log(Err, "cmake is not installed or not in PATH, unable to build\n");
             return;
         }
-        Log(Default, "cmake is present\n");
 
-        string buildDir = string.IsNullOrWhiteSpace(config.OutputFile) ? "build" : config.OutputFile;
+        string buildDir = string.IsNullOrWhiteSpace(config.Build.OutputPath) ? "build" : config.Build.OutputPath;
 
-        Log(Default, $"running \"cmake -S . -B {buildDir} {config.CompilerFlags}\"\n");
-        int setupRes = CommandRunner.Run("cmake", $"-S . -B {buildDir} {config.CompilerFlags}");
+        Log(Default, $"Running \"cmake -S . -B {buildDir} {config.Build.Flags}\"\n");
+        int setupRes = CommandRunner.Run("cmake", $"-S . -B {buildDir} {config.Build.Flags}");
         if (setupRes != 0)
         {
-            Log(Err, $"project setup failed. (exit code {setupRes})\n");
+            Log(Err, $"Project setup failed. (exit code {setupRes})\n");
             return;
         }
 
-        Log(Default, $"running \"cmake --build {buildDir}\"\n");
+        Log(Default, $"Running \"cmake --build {buildDir}\"\n");
         int compileRes = CommandRunner.Run("cmake", $"--build {buildDir}");
         if (compileRes == 0)
-            Log(Done, $"build finished successfully. output located in {buildDir}\n");
+            Log(Done, $"Build finished successfully. Output located in {buildDir}\n");
         else
-            Log(Err, $"project build failed. (exit code {compileRes})\n");
+            Log(Err, $"Project build failed. (exit code {compileRes})\n");
     }
 }

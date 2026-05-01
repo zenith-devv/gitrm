@@ -1,13 +1,6 @@
 using static Logger;
 using static Logger.MessageType;
 
-public class ProjectConfig
-{
-    public string CompilerFlags { get; set; } = "";
-    public string MainFile { get; set; } = "";
-    public string OutputFile { get; set; } = "";
-}
-
 public static class BuildAssistant
 {
     private static readonly List<IBuilder> Builders =
@@ -23,7 +16,7 @@ public static class BuildAssistant
 
     public static void Build()
     {
-        var config = JsonHandler.LoadConfig();
+        var config = ConfigParser.LoadConfig();
         if (config == null)
             return;
 
@@ -31,13 +24,13 @@ public static class BuildAssistant
 
         if (builder == null)
         {
-            if (string.IsNullOrEmpty(config.MainFile)) 
+            if (string.IsNullOrEmpty(config.Build.MainFile)) 
             {
                 Log(Err, "MainFile is missing in bob-config.json and no build system detected\n");
                 return;
             }
 
-            string extension = Path.GetExtension(config.MainFile).ToLower();
+            string extension = Path.GetExtension(config.Build.MainFile).ToLower();
             builder = Builders.FirstOrDefault(b => b.CanHandle(extension));
         }
 
@@ -45,8 +38,8 @@ public static class BuildAssistant
             builder.Build(config);
         else
         {
-            string hint = string.IsNullOrEmpty(config.MainFile) ? "unknown" : Path.GetExtension(config.MainFile);
-            Log(Err, $"no builder found for {hint}\n");
+            string hint = string.IsNullOrEmpty(config.Build.MainFile) ? "unknown" : Path.GetExtension(config.Build.MainFile);
+            Log(Err, $"No builder found for {hint}\n");
         }
     }
 
@@ -57,33 +50,33 @@ public static class BuildAssistant
 
         if (Directory.Exists(repoName))
         {
-            Log(Err, $"folder '{repoName}' already exists\n");
+            Log(Err, $"Folder '{repoName}' already exists\n");
             return;
         }
 
-        Log(Default, $"cloning repo '{repoName}' using git...\n");
+        Log(Default, $"Cloning repo '{repoName}'...\n");
         int exitCode = CommandRunner.Run("git", $"clone {url}");
 
         if (exitCode == 0)
         {
-            string configPath = Path.Combine(repoName, "bob-config.json");
+            string configPath = Path.Combine(repoName, "gitrm.yaml");
 
             if (File.Exists(configPath))
             {
-                Log(Default, "bob-config.json found. entering repo...\n");
+                Log(Default, "gitrm.yaml found. Entering repo...\n");
                 Directory.SetCurrentDirectory(repoName); 
                 Build();
                 Directory.SetCurrentDirectory("..");
             }
             else
             {
-                Log(Info, "bob-config.json was not found in the repo. exiting\n");
+                Log(Info, "gitrm.yaml was not found in the repo. Exiting\n");
                 Directory.SetCurrentDirectory("..");
             }
         }
         else
         {
-            Log(Err, "failed to clone repo\n");
+            Log(Err, "Failed to clone repo\n");
         }
     }
 }

@@ -1,45 +1,51 @@
-# bob (build orchestrator binary)
-bob is a minimalist build orchestrator for Linux systems inspired by the KISS philosophy of Arch Linux and the simplicity of makepkg. It streamlines the process of fetching source code, reading necessary data from bob-config.json and compiling the project into ready-to-use binaries without the need to remember 
-complex compiler flags for every different language.
+# gitrm (Git Repository Manager)
+
+**gitrm** is a minimalist build helper and repository manager for Linux systems. It is inspired by the KISS philosophy and the simplicity of Arch Linux's `makepkg`. It streamlines the process of fetching source code, managing dependencies, and compiling projects without the need to remember complex compiler flags for every different language.
+
 ## Features
-* **Multi-language support:** native handling for compiled languages like C# and Rust
-* **Git integration:** the `bob fetch` command automatically clones repositories directly into your workspace and builds it (if bob-config.json exists)
-* **Minimal configuration:** a single `bob-config.json` file is all bob needs to understand your project structure
-* **KISS philosophy:** lightweight, fast, and designed for the terminal
+* **Multi-language support:** Native handling for C#, Rust, Go, Java, and C/C++ (GCC/Clang).
+* **Git integration:** The `gitrm fetch <url>` command automatically clones a repository and builds it if a config file is detected.
+* **YAML Configuration:** A clean, modern `gitrm.yaml` format for project management.
+* **Simplified Dependencies:** A straightforward list of required packages in the `deps` section.
+* **Lightweight:** Built with .NET and compiled into a single, high-performance binary.
+
+**The project is still in development and many features are yet to come (for instance automatic project dependencies fetching).**
+
 ## How it works
-If you want to build the project with bob instead of entering tens of compiler flags, you can do it with a simple command `bob build`. Firstly bob reads the data from bob-config.json which contains main project file name, compiler flags to use and output file location. Based on the main 
-project file's extension bob picks the proper compiler to use. Then it checks if the compiler is installed in the system. After that bob begins to build the project based on the provided data from json file.
+Instead of entering dozens of compiler flags manually, you use a single command: `gitrm build`. 
+The program reads `gitrm.yaml`, checks the `mainFile` extension, and automatically selects the appropriate compiler. If the compiler is installed on your system, `gitrm` begins the build process.
 
-Example of a bob-config.json file for .NET project:
-```
-{
-  "CompilerFlags": "-c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -v d",
-  "MainFile": "bob.csproj",
-  "OutputFile": "dist"
-}
-```
-Based on that bob will run `dotnet publish bob.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -v d -o dist`. Note that if you leave the OutputFile field empty, bob will automatically specify the default name for the built binary.
+### Example `gitrm.yaml` for a .NET project:
+```yaml
+build:
+  mainFile: 'gitrm.csproj'
+  flags: '-c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true'
+  outputPath: './dist'
 
-If the project has a build system, bob-config.json example structure looks like this:
-```
-{
-  "CompilerFlags": "-D CMAKE_BUILD_TYPE=Release",
-  "MainFile": "CMakeLists.txt",
-  "OutputFile": "build"
-}
+deps:
+  - yamldotnet
+  - tomlyn
 ```
 
-**note:** bob is still in early development and many features are missing.
+### Example for a C++ project (CMake):
+```yaml
+build:
+  mainFile: 'CMakeLists.txt'
+  flags: '-D CMAKE_BUILD_TYPE=Release'
+  outputPath: 'build'
+
+deps:
+  - nlohmann-json
+  - fmt
+```
+
 ## Supported languages
-* **C#** (.NET)
+* **C#**
 * **Rust** (Cargo)
-* **C/C++** (GCC/G++ including Meson and CMake)
-* **Golang**
-* **Java**
-## Setup
-To compile bob, run `dotnet publish bob.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true`. Then add the output binary to your system `PATH`. 
-## Available commands
-* **bob build** - read bob-config.json and compile project to executable
-* **bob fetch** - clone a repository and automatically build the project (if bobconfig.json exists)
-* **bob config** - create an empty bobconfig.json template
-* **bob version** - display bob version
+* **C++** (GCC/G++, CMake, Meson)
+* **Go**
+* **Java** (Maven, Gradle)
+
+## Setup and installation
+To compile gitrm and install it into your local binary folder, run the provided build.sh script. It will build the binary and move it to `~/.local/bin/gitrm`. Ensure this directory is in your system's `$PATH`.
+

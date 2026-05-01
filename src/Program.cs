@@ -18,17 +18,17 @@ public class Program
             case "build":
                 BuildAssistant.Build();
                 break;
-            case "fetch":
+            case "clone":
                 if (args.Length < 2) 
                 {
-                    Log(Err, "repo url not specified. usage: bob fetch <url>\n");
+                    Log(Err, "Repo url not specified. usage: gitrm clone <url>\n");
                     break; 
                 }
                 string url = args[1];
                 BuildAssistant.Fetch(url);
                 break;
             case "config":
-                JsonHandler.CreateTemplate();
+                ConfigParser.CreateTemplate();
                 break;
             case "version":
                 DisplayVersion();
@@ -41,18 +41,18 @@ public class Program
 
     private static void DisplayHelp()
     {
-        Console.WriteLine("usage: bob [command]");
-        Console.WriteLine("available commands:");
-        Console.WriteLine("build   : read bob-config.json and compile project to executable");
-        Console.WriteLine("fetch   : clone a repository and automatically build the project (if bobconfig.json exists)");
-        Console.WriteLine("config  : create an empty bobconfig.json template");
-        Console.WriteLine("version : display bob version");
+        Console.WriteLine("Usage: gitrm [command]");
+        Console.WriteLine("Available commands:");
+        Console.WriteLine("build   : Read gitrm.yaml and compile project to executable");
+        Console.WriteLine("clone   : Clone a repository and automatically build the project (if gitrm.yaml exists)");
+        Console.WriteLine("config  : Create an empty gitrm.yaml template");
+        Console.WriteLine("version : Display gitrm version");
     }
 
     private static void DisplayVersion()
     {
-        Console.WriteLine("bob (build orchestrator binary) version 0.5.2-alpha");
-        Console.WriteLine("copyright (c) 2026 Michael Zenith");
-        Console.WriteLine("licensed under MIT license");
+        Console.WriteLine("gitrm (git repo manager) version 0.6-beta");
+        Console.WriteLine("Copyright (c) 2026 Michael Zenith");
+        Console.WriteLine("Licensed under MIT license");
     }
 }

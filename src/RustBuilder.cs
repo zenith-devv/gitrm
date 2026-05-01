@@ -14,8 +14,8 @@ public class RustBuilder : IBuilder
             Log(Err, "cargo is not installed or not in PATH, unable to build\n");
             return;
         }
-        Log(Default, "cargo is present\n");
-        string targetProject = config.MainFile;
+        
+        string targetProject = config.Build.MainFile;
         string extension = Path.GetExtension(targetProject).ToLower();
         string cmd;
         string args;
@@ -24,34 +24,34 @@ public class RustBuilder : IBuilder
         if (extension == ".toml")
         {
             cmd = "cargo";
-            string outputFlag = string.IsNullOrWhiteSpace(config.OutputFile) 
+            string outputFlag = string.IsNullOrWhiteSpace(config.Build.OutputPath) 
                 ? "" 
-                : $"--target-dir {config.OutputFile}";
-            args = $"build {outputFlag} {config.CompilerFlags}".Trim();
+                : $"--target-dir {config.Build.OutputPath}";
+            args = $"build {outputFlag} {config.Build.Flags}".Trim();
             
-            if (!string.IsNullOrWhiteSpace(config.OutputFile))
-                outPath = config.OutputFile;
+            if (!string.IsNullOrWhiteSpace(config.Build.OutputPath))
+                outPath = config.Build.OutputPath;
             else
             {
-                bool isRelease = config.CompilerFlags.Contains("-r") || config.CompilerFlags.Contains("--release");
+                bool isRelease = config.Build.Flags.Contains("-r") || config.Build.Flags.Contains("--release");
                 outPath = isRelease ? "target/release" : "target/debug";
             }
         }
         else
         {
             cmd = "rustc";
-            string binaryName = string.IsNullOrWhiteSpace(config.OutputFile) ? "app.out" : config.OutputFile;
-            args = $"{targetProject} -o {binaryName} {config.CompilerFlags}";
+            string binaryName = string.IsNullOrWhiteSpace(config.Build.OutputPath) ? "app.out" : config.Build.OutputPath;
+            args = $"{targetProject} -o {binaryName} {config.Build.Flags}";
             outPath = binaryName;
-            Log(Warn, "single file build. for better performance and dependencies use Cargo.toml\n");
+            Log(Warn, "Single file build. For better performance and dependencies use Cargo.toml\n");
         }
 
-        Log(Default, $"running \"{cmd} {args}\"\n");
+        Log(Default, $"Running \"{cmd} {args}\"\n");
         int result = CommandRunner.Run(cmd, args);
 
         if (result == 0)
-            Log(Done, $"build finished successfully. output located in {outPath}\n");
+            Log(Done, $"Build finished successfully. Output located in {outPath}\n");
         else
-            Log(Err, $"project build failed. (exit code {result})\n");
+            Log(Err, $"Project build failed. (exit code {result})\n");
     }
 }

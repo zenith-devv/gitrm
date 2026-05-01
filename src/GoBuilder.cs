@@ -15,9 +15,8 @@ public class GoBuilder : IBuilder
             Log(Err, "go is not installed or not in PATH, unable to build\n");
             return;
         }
-        Log(Default, "go is present\n");
 
-        string ext = Path.GetExtension(config.MainFile).ToLower();
+        string ext = Path.GetExtension(config.Build.MainFile).ToLower();
         string cmd = "go";
         string args;
         string outPath;
@@ -25,27 +24,27 @@ public class GoBuilder : IBuilder
         if (ext == ".mod")
         {
             // go.mod — build the whole module
-            string outputFlag = string.IsNullOrWhiteSpace(config.OutputFile)
+            string outputFlag = string.IsNullOrWhiteSpace(config.Build.OutputPath)
                 ? ""
-                : $"-o {config.OutputFile}";
-            args = $"build {outputFlag} {config.CompilerFlags} ./...".Trim();
-            outPath = string.IsNullOrWhiteSpace(config.OutputFile) ? "." : config.OutputFile;
+                : $"-o {config.Build.OutputPath}";
+            args = $"build {outputFlag} {config.Build.Flags} ./...".Trim();
+            outPath = string.IsNullOrWhiteSpace(config.Build.OutputPath) ? "." : config.Build.OutputPath;
         }
         else
         {
             // single .go file
-            string outFile = string.IsNullOrWhiteSpace(config.OutputFile) ? "app.out" : config.OutputFile;
-            args = $"build -o {outFile} {config.CompilerFlags} {config.MainFile}".Trim();
+            string outFile = string.IsNullOrWhiteSpace(config.Build.OutputPath) ? "app.out" : config.Build.OutputPath;
+            args = $"build -o {outFile} {config.Build.Flags} {config.Build.MainFile}".Trim();
             outPath = outFile;
-            Log(Warn, "single file build. for better dependency management use go.mod\n");
+            Log(Warn, "Single file build. For better dependency management use go.mod\n");
         }
 
-        Log(Default, $"running \"{cmd} {args}\"\n");
+        Log(Default, $"Running \"{cmd} {args}\"\n");
         int result = CommandRunner.Run(cmd, args);
 
         if (result == 0)
-            Log(Done, $"build finished successfully. output located in {outPath}\n");
+            Log(Done, $"Build finished successfully. Output located in {outPath}\n");
         else
-            Log(Err, $"project build failed. (exit code {result})\n");
+            Log(Err, $"Project build failed. (exit code {result})\n");
     }
 }

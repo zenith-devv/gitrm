@@ -14,22 +14,22 @@ public class CsBuilder : IBuilder
             Log(Err, "dotnet is not installed or not in PATH, unable to build\n");
             return;
         }
-        Log(Default, "dotnet is present\n");
-        string targetProject = config.MainFile;
+        
+        string targetProject = config.Build.MainFile;
         string extension = Path.GetExtension(targetProject).ToLower();
 
         if (extension == ".cs")
-             Log(Warn, "single file build. for better performance and dependencies use .csproj file\n");
+             Log(Warn, "Single file build. For better performance and dependencies use .csproj file\n");
 
-        string outPath = string.IsNullOrWhiteSpace(config.OutputFile) ? "publish" : config.OutputFile;
+        string outPath = string.IsNullOrWhiteSpace(config.Build.OutputPath) ? "publish" : config.Build.OutputPath;
         string cmd = "dotnet";
-        string args = $"publish {targetProject} {config.CompilerFlags} -o {outPath}".Trim();
-        Log(Default, $"running \"{cmd} {args}\"\n");
+        string args = $"publish {targetProject} {config.Build.Flags} -o {outPath}".Trim();
+        Log(Default, $"Running \"{cmd} {args}\"\n");
         int result = CommandRunner.Run(cmd, args);
 
         if (result == 0)
-            Log(Done, $"build finished successfully. output located in {outPath}\n");
+            Log(Done, $"Build finished successfully. Output located in {outPath}\n");
         else
-            Log(Err, $"project build failed. (exit code {result})\n");
+            Log(Err, $"Project build failed. (exit code {result})\n");
     }
 }
