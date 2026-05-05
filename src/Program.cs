@@ -81,7 +81,7 @@ public class Program
 
     private static void DisplayVersion()
     {
-        Console.WriteLine("gitrm (git repo manager) version 0.6-beta");
+        Console.WriteLine("gitrm (git repo manager) version 0.7-beta");
         Console.WriteLine("Copyright (c) 2026 Michael Zenith");
         Console.WriteLine("Licensed under MIT license");
     }

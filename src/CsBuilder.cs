@@ -3,7 +3,7 @@ using static Logger.MessageType;
 
 public class CsBuilder : IBuilder
 {
-    public string Name => "csharp (dotnet)";
+    public string Name => "C# (.NET)";
     public bool CanHandle(string ext) => ext is ".cs" or ".csproj" or ".sln";
 
     public void Build(ProjectConfig config)

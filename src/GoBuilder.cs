@@ -3,7 +3,7 @@ using static Logger.MessageType;
 
 public class GoBuilder : IBuilder
 {
-    public string Name => "go";
+    public string Name => "Go";
     public bool CanHandle(string ext) => ext is ".go" or ".mod";
 
     public void Build(ProjectConfig config)

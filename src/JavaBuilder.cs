@@ -3,7 +3,7 @@ using static Logger.MessageType;
 
 public class JavaBuilder : IBuilder
 {
-    public string Name => "java";
+    public string Name => "Java";
     public bool CanHandle(string ext) => ext is ".java" or ".xml"; // .xml covers pom.xml
 
     public void Build(ProjectConfig config)

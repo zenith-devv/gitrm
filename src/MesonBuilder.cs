@@ -3,7 +3,7 @@ using static Logger.MessageType;
 
 public class MesonBuilder : IBuilder
 {
-    public string Name => "meson";
+    public string Name => "Meson";
     public bool CanHandle(string ext) => false;
     public bool Detect(string directory) => File.Exists(Path.Combine(directory, "meson.build"));
 

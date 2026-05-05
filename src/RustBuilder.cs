@@ -3,7 +3,7 @@ using static Logger.MessageType;
 
 public class RustBuilder : IBuilder
 {
-    public string Name => "rust (cargo)";
+    public string Name => "Rust (Cargo)";
     public bool CanHandle(string extension) => extension is ".rs" or ".toml";
 
     public void Build(ProjectConfig config)

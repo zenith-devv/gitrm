@@ -3,7 +3,7 @@ using static Logger.MessageType;
 
 public class GccBuilder : IBuilder
 {
-    public string Name => "c/c++ (gcc/g++)";
+    public string Name => "C/C++ (GCC/G++)";
     public bool CanHandle(string ext) => ext is ".c" or ".cpp" or ".cc";
 
     public void Build(ProjectConfig config)

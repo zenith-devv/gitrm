@@ -3,7 +3,7 @@ using static Logger.MessageType;
 
 public class CmakeBuilder : IBuilder
 {
-    public string Name => "cmake";
+    public string Name => "CMake";
     public bool CanHandle(string ext) => false;
     public bool Detect(string directory) => File.Exists(Path.Combine(directory, "CMakeLists.txt"));
 
