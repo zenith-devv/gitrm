@@ -187,7 +187,19 @@ public static class BuildAssistant
         }
         catch
         {
-            return new FileInfo(path).Length > 100_000;
+            return fileInfo.Length > 100_000;
+        }
+        catch
+        {
+            try
+            {
+                var fileInfo = new FileInfo(path);
+                return fileInfo.Length > 100_000;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 
