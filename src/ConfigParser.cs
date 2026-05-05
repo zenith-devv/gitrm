@@ -19,12 +19,11 @@ public static class ConfigParser
                     Flags = "",
                     OutputPath = ""
                 },
-                // Deps = new List<string>()
             };
 
             var serializer = new SerializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .Build();
+                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                .Build();
 
             string yamlContent = serializer.Serialize(template);
             File.WriteAllText(FileName, yamlContent);
@@ -41,10 +40,10 @@ public static class ConfigParser
             Log(Err, "Could not find gitrm.yaml. Make sure to run 'gitrm config' and specify the data.\n");
             return null;
         }
-        try 
+        try
         {
             string yamlContent = File.ReadAllText(FileName);
-            
+
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .IgnoreUnmatchedProperties()
@@ -54,8 +53,23 @@ public static class ConfigParser
         }
         catch (Exception)
         {
-            Log(Err, "gitrm.toml is invalid\n");
+            Log(Err, "gitrm.yaml is invalid\n");
             return null;
         }
+    }
+
+    public static ProjectConfig? LoadConfigFrom(string path)
+    {
+        if (!File.Exists(path)) return null;
+        try
+        {
+            var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                .IgnoreUnmatchedProperties()
+                .Build();
+
+            return deserializer.Deserialize<ProjectConfig>(File.ReadAllText(path));
+        }
+        catch { return null; }
     }
 }
