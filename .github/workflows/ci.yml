@@ -39,9 +39,10 @@ jobs:
           pip install nuitka
 
       - name: Compile with Nuitka
+        shell: bash
         run: |
           python -m nuitka --onefile --standalone --remove-output \
-            --output-filename=gitrm${{ matrix.ext }} src/main.py
+            --summary --show-modules --output-filename=gitrm${{ matrix.ext }} src/main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

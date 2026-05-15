@@ -22,7 +22,7 @@ BUILD_VERSION=$(date +'%Y.%m.%d-%H%M')
 echo "Compiling gitrm version $BUILD_VERSION..."
 
 VERSION=$BUILD_VERSION python3 -m nuitka --onefile --standalone --remove-output \
-    --show-progress --show-scons --output-filename=$BINARY_NAME src/main.py
+    --show-progress --show-scons --summary --show-modules --output-filename=$BINARY_NAME src/main.py
 
 if [ -f "$BINARY_NAME.bin" ] || [ -f "$BINARY_NAME" ]; then
     echo "Moving binary to $INSTALL_PATH..."
