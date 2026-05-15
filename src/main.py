@@ -1,5 +1,4 @@
 import os
-import sys
 import typer
 import shutil
 import subprocess
@@ -9,21 +8,8 @@ from loguru import logger
 from utils import load_config, make_config
 from builders import get_builder, run_custom_script
 
-def get_version():
-    if getattr(sys, 'frozen', False):
-        import datetime
-        mtime = os.path.getmtime(sys.executable)
-        build_date = datetime.datetime.fromtimestamp(mtime).strftime('%Y.%m.%d-%H%M')
-        return f"{build_date} (native)"
+__version__ = "v0.6-beta-18-g4d7508c (build: 2026.05.16-0006)"
 
-    try:
-        return subprocess.check_output(
-            ["git", "describe", "--tags", "--always"], 
-            stderr=subprocess.DEVNULL
-        ).decode().strip()
-    except:
-        return "dev-build"
-    
 app = typer.Typer(
     help="gitrm (git repo manager) - Tool for building and managing projects.",
     add_completion=False,
@@ -96,7 +82,7 @@ def version():
     """
     Display gitrm version.
     """
-    typer.echo(f"gitrm (git repo manager) version {get_version()}")
+    typer.echo(f"gitrm (git repo manager) version {__version__}")
     typer.echo("Copyright (c) 2026 Michael Zenith")
 
 if __name__ == "__main__":
