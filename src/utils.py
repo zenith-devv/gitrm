@@ -1,6 +1,7 @@
 import os
 import sys
 import yaml
+
 from loguru import logger
 from dataclasses import asdict
 from models import GitrmYaml, BuildSection, CustomScriptSection
@@ -36,7 +37,7 @@ def load_config(file_path: str) -> GitrmYaml:
         )
         
     except FileNotFoundError:
-        logger.error(f"gitrm.yaml was not found")
+        logger.error("gitrm.yaml was not found")
         sys.exit(1)
     except TypeError as e:
         logger.error(f"YAML structure is invalid: {e}")

@@ -1,179 +1,94 @@
-name: CI — Build, Test & Release
+name: CI — Build & Release (Python Native)
 
 on:
   push:
     branches: [ main ]
 
-env:
-  DOTNET_VERSION: '10.0.x'
-  PROJECT_FILE: 'gitrm.csproj'
-
 jobs:
   # ─────────────────────────────────────────────
-  # 1. RESTORE
-  # ─────────────────────────────────────────────
-  restore:
-    name: Restore dependencies
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Restore NuGet packages
-        run: dotnet restore ${{ env.PROJECT_FILE }}
-
-  # ─────────────────────────────────────────────
-  # 2. BUILD — 6 platform × 2 warianty = 12 binary
+  # 1. BUILD — Kompilacja natywna (Linux & Windows)
   # ─────────────────────────────────────────────
   build:
-    name: Build ${{ matrix.rid }} [${{ matrix.variant }}]
-    runs-on: ubuntu-latest
-    needs: restore
-
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        rid:
-          - linux-x64
-          - linux-arm64
-          - win-x64
-          - win-arm64
-          - osx-x64
-          - osx-arm64
-        variant:
-          - self-contained
-          - binary-only
+        os: [ubuntu-latest, windows-latest]
         include:
-          - rid: linux-x64
+          - os: ubuntu-latest
             ext: ""
-          - rid: linux-arm64
-            ext: ""
-          - rid: win-x64
+            asset_name: gitrm-linux-x64
+          - os: windows-latest
             ext: ".exe"
-          - rid: win-arm64
-            ext: ".exe"
-          - rid: osx-x64
-            ext: ""
-          - rid: osx-arm64
-            ext: ""
+            asset_name: gitrm-windows-x64
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          python-version: '3.10'
+          cache: 'pip'
 
-      - name: Restore NuGet packages
-        run: dotnet restore ${{ env.PROJECT_FILE }}
-
-      # self-contained: runtime w środku, trimmed (~15-20 MB)
-      - name: Publish — self-contained
-        if: matrix.variant == 'self-contained'
+      - name: Install dependencies
         run: |
-          dotnet publish ${{ env.PROJECT_FILE }} \
-            -c Release \
-            -r ${{ matrix.rid }} \
-            --self-contained true \
-            -p:PublishSingleFile=true \
-            -p:PublishTrimmed=true \
-            -o dist/${{ matrix.rid }}/self-contained
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install nuitka
 
-      # binary-only: wymaga .NET na systemie (~100 KB)
-      - name: Publish — binary-only
-        if: matrix.variant == 'binary-only'
+      - name: Compile with Nuitka
         run: |
-          dotnet publish ${{ env.PROJECT_FILE }} \
-            -c Release \
-            -r ${{ matrix.rid }} \
-            --self-contained false \
-            -p:PublishSingleFile=true \
-            -o dist/${{ matrix.rid }}/binary-only
-
-      # Zmień nazwę na gitrm-<rid>-<variant>[.exe] żeby artefakty się nie nadpisywały
-      - name: Rename binary
-        shell: bash
-        run: |
-          SRC="dist/${{ matrix.rid }}/${{ matrix.variant }}/gitrm${{ matrix.ext }}"
-          DST="dist/gitrm-${{ matrix.rid }}-${{ matrix.variant }}${{ matrix.ext }}"
-          mv "$SRC" "$DST"
-          chmod +x "$DST" || true
+          python -m nuitka --onefile --standalone --remove-output \
+            --output-filename=gitrm${{ matrix.ext }} main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: gitrm-${{ matrix.rid }}-${{ matrix.variant }}
-          path: dist/gitrm-${{ matrix.rid }}-${{ matrix.variant }}${{ matrix.ext }}
-          if-no-files-found: error
-          retention-days: 7
+          name: ${{ matrix.asset_name }}
+          path: gitrm${{ matrix.ext }}
 
   # ─────────────────────────────────────────────
-  # 3. TEST — smoke testy (linux-x64, dotnet run)
+  # 2. TEST — Smoke tests (Linux)
   # ─────────────────────────────────────────────
   test:
     name: Smoke tests
     runs-on: ubuntu-latest
     needs: build
-
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
+      
+      - name: Download Linux binary
+        uses: actions/download-artifact@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
- 
-      - name: Restore NuGet packages
-        run: dotnet restore ${{ env.PROJECT_FILE }}
+          name: gitrm-linux-x64
+          path: .
+      
+      - name: Setup binary
+        run: chmod +x gitrm
 
-      - name: Test — brak argumentów wyświetla help
-        run: |
-          OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- 2>&1)
-          echo "$OUTPUT"
-          echo "$OUTPUT" | grep -q "Usage: gitrm" \
-            || (echo "FAIL: brak 'Usage: gitrm'" && exit 1)
+      - name: Test — version command
+        run: ./gitrm version | grep -q "git repo manager"
 
-      - name: Test — komenda version zwraca wersję
+      - name: Test — config generation
         run: |
-          OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- version 2>&1)
-          echo "$OUTPUT"
-          echo "$OUTPUT" | grep -q "git repo manager" \
-            || (echo "FAIL: brak 'git repo manager'" && exit 1)
-
-      - name: Test — nieznana komenda loguje błąd
-        run: |
-          OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- definitely-not-a-command 2>&1)
-          echo "$OUTPUT"
-          echo "$OUTPUT" | grep -q "Unknown command" \
-            || (echo "FAIL: brak 'Unknown command'" && exit 1)
-
-      - name: Test — config tworzy gitrm.yaml
-        run: |
-          cd /tmp
-          dotnet run --project ${{ github.workspace }}/${{ env.PROJECT_FILE }} -- config
-          [ -f gitrm.yaml ] \
-            || (echo "FAIL: gitrm.yaml nie został stworzony" && exit 1)
-          echo "OK: gitrm.yaml istnieje"
-
-      - name: Test — clone bez URL zwraca błąd
-        run: |
-          OUTPUT=$(dotnet run --project ${{ env.PROJECT_FILE }} -- clone 2>&1)
-          echo "$OUTPUT"
-          echo "$OUTPUT" | grep -q "url not specified" \
-            || (echo "FAIL: brak komunikatu o braku URL" && exit 1)
+          ./gitrm config
+          if [ ! -f gitrm.yaml ]; then
+            echo "FAIL: gitrm.yaml not created"
+            exit 1
+          fi
 
   # ─────────────────────────────────────────────
-  # 4. RELEASE — tag + GitHub Release ze wszystkimi 12 binary
+  # 3. RELEASE — Automatyczny GitHub Release
   # ─────────────────────────────────────────────
   release:
     name: Publish release
     runs-on: ubuntu-latest
     needs: [ build, test ]
-
     permissions:
       contents: write
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v4
@@ -183,68 +98,32 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: release-assets/
+          path: release-assets
           merge-multiple: true
 
-      - name: List release assets
-        run: ls -lah release-assets/
-
       - name: Generate tag name
-        id: tag
-        run: |
-          TAG=$(cat VERSION)
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-
-      - name: Push tag
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag ${{ steps.tag.outputs.tag }} -m "CI release ${{ steps.tag.outputs.tag }}"
-          git push origin ${{ steps.tag.outputs.tag }}
+        id: version
+        # Generuje tag na podstawie daty i numeru buildu (np. v2026.05.15-42)
+        run: echo "tag=v$(date +'%Y.%m.%d')-${{ github.run_number }}" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          name: "gitrm ${{ steps.tag.outputs.tag }}"
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "gitrm ${{ steps.version.outputs.tag }}"
           prerelease: true
           generate_release_notes: true
           body: |
-            ## gitrm — build orchestrator binary
+            ## gitrm — Native Python Binary
 
-            Automatyczny release z commitu `${{ github.sha }}`.
-
-            ### Warianty
-            | Wariant | Opis | Rozmiar |
-            |---|---|---|
-            | `self-contained` | runtime .NET w środku, działa bez instalacji | ~15-20 MB |
-            | `binary-only` | wymaga .NET zainstalowanego na systemie | ~100 KB |
-
-            ### Pliki
-            | System | Arch | self-contained | binary-only |
-            |---|---|---|---|
-            | Linux   | x64   | `gitrm-linux-x64-self-contained`     | `gitrm-linux-x64-binary-only`     |
-            | Linux   | arm64 | `gitrm-linux-arm64-self-contained`   | `gitrm-linux-arm64-binary-only`   |
-            | Windows | x64   | `gitrm-win-x64-self-contained.exe`   | `gitrm-win-x64-binary-only.exe`   |
-            | Windows | arm64 | `gitrm-win-arm64-self-contained.exe` | `gitrm-win-arm64-binary-only.exe` |
-            | macOS   | x64   | `gitrm-osx-x64-self-contained`       | `gitrm-osx-x64-binary-only`       |
-            | macOS   | arm64 | `gitrm-osx-arm64-self-contained`     | `gitrm-osx-arm64-binary-only`     |
-
-            ### Instalacja (Linux/macOS)
+            Automatyczny release skompilowany przy użyciu Nuitka.
+            
+            **Szybka instalacja (Linux):**
             ```bash
-            chmod +x gitrm-linux-x64-self-contained
-            sudo mv gitrm-linux-x64-self-contained /usr/local/bin/gitrm
+            chmod +x gitrm-linux-x64
+            mkdir -p ~/.local/bin
+            mv gitrm-linux-x64 ~/.local/bin/gitrm
             ```
           files: |
-            release-assets/gitrm-linux-x64-self-contained
-            release-assets/gitrm-linux-arm64-self-contained
-            release-assets/gitrm-win-x64-self-contained.exe
-            release-assets/gitrm-win-arm64-self-contained.exe
-            release-assets/gitrm-osx-x64-self-contained
-            release-assets/gitrm-osx-arm64-self-contained
-            release-assets/gitrm-linux-x64-binary-only
-            release-assets/gitrm-linux-arm64-binary-only
-            release-assets/gitrm-win-x64-binary-only.exe
-            release-assets/gitrm-win-arm64-binary-only.exe
-            release-assets/gitrm-osx-x64-binary-only
-            release-assets/gitrm-osx-arm64-binary-only
+            release-assets/gitrm-linux-x64
+            release-assets/gitrm-windows-x64.exe

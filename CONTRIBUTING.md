@@ -1,29 +1,44 @@
 # Contributing to gitrm
 
-First of all, thank you for considering contributing to gitrm! This project aims to stay simple (KISS) and efficient, and your help is much appreciated.
+Thank you for your interest in improving gitrm! We follow the KISS (Keep It Simple, Stupid) principle. We value code that is easy to read, maintain, and understand over complex abstractions.
 
-## How can I help?
+## How to help?
 
-### Testing
-The easiest way to help is to use gitrm on your system (Linux is recommended) and report any bugs in the **Issues** tab.
+### Bug reporting and testing
+As a minimalist tool, stability is key. If you find a project that `gitrm` fails to detect or build correctly, please open an **Issue** with:
+* Your `gitrm.yaml` file.
+* The error log output.
+* Your OS/distro details.
 
 ### Adding New Builders
-If you want to add support for a new language (e.g., Go, Java, Zig):
-1. Take a look at the existing `IBuilder` interface.
-2. Implement your builder logic.
-3. Add it to the `Builders` list in `BuildAssistant.cs`.
+The builder system is now modular. To add a new language:
+1. Create a new class in `builders.py` that inherits from `BaseBuilder`.
+2. Implement the `run()` method using `self.prepare`, `self.build` and `self.configure` if necessary.
+3. Register your new builder in the `get_builder()` factory function.
 
 ## Development Workflow
 
-1. **Fork the repo** and create your branch from `main`.
-2. **Setup:** Ensure you have the .NET SDK installed.
-3. **Build & Test:**
-   - Run `dotnet build` to compile the project.
-   - Run `dotnet run -- build` to test the build logic on a sample project.
-5. **Style:** Keep the code simple. We prefer readable "Basic C#" over complex design patterns.
+### Project structure
+* `main.py`: CLI entry point (Typer)
+* `builders.py`: Logic for different languages
+* `models.py`: Data structures
+* `utils.py`: YAML parsing
 
-## Submitting Changes
+## Local testing
 
-1. **Commit** your changes with a clear message (e.g., `Add GoBuilder support`).
-2. **Push** to your fork.
-3. **Open a Pull Request** (PR) and describe what you've changed.
+To test your changes without compiling:
+
+```bash
+python3 src/main.py build
+```
+
+## Style guide
+* **No over-engineering:** If a problem can be solved with a simple `if` statement, don't use a Design Pattern.
+* **Type Hints:** Always use Python type hinting for function arguments and return types.
+* **Logging:** Use the `loguru` logger for all outputs. Avoid naked `print()` statements.
+
+## Submitting changes
+1. **Fork** the repository.
+2. **Create a branch** (e.g., `feature/add-zig-support`).
+3. **Commit** with descriptive messages.
+4. **Push** and open a **Pull Request**.
