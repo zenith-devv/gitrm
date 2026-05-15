@@ -19,10 +19,25 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 BUILD_VERSION=$(date +'%Y.%m.%d-%H%M')
-echo "Compiling gitrm version $BUILD_VERSION..."
+WIN_VERSION=$(echo $BUILD_VERSION | tr '-' '.' | cut -d'.' -f1-4)
 
-VERSION=$BUILD_VERSION python3 -m nuitka --onefile --standalone --remove-output \
-    --show-progress --show-scons --show-modules --output-filename=$BINARY_NAME src/main.py
+echo "Compiling $BINARY_NAME version $BUILD_VERSION (Internal: $WIN_VERSION)..."
+
+NUITKA_FLAGS=(
+    "--onefile"
+    "--standalone"
+    "--remove-output"
+    "--lto=yes"
+    "--nofollow-import-to=unittest"
+    "--nofollow-import-to=pydoc"
+    "--nofollow-import-to=email"
+    "--product-name=gitrm"
+    "--file-version=$WIN_VERSION"
+    "--show-scons"
+    "--output-filename=$BINARY_NAME"
+)
+
+VERSION=$BUILD_VERSION python3 -m nuitka "${NUITKA_FLAGS[@]}" src/main.py
 
 if [ -f "$BINARY_NAME.bin" ] || [ -f "$BINARY_NAME" ]; then
     echo "Moving binary to $INSTALL_PATH..."
