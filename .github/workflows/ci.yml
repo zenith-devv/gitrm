@@ -41,7 +41,7 @@ jobs:
       - name: Compile with Nuitka
         run: |
           python -m nuitka --onefile --standalone --remove-output \
-            --output-filename=gitrm${{ matrix.ext }} main.py
+            --output-filename=gitrm${{ matrix.ext }} src/main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -103,8 +103,13 @@ jobs:
 
       - name: Generate tag name
         id: version
-        # Generuje tag na podstawie daty i numeru buildu (np. v2026.05.15-42)
-        run: echo "tag=v$(date +'%Y.%m.%d')-${{ github.run_number }}" >> $GITHUB_OUTPUT
+        run: |
+          # Jeśli push był z tagiem, użyj go. Jeśli nie, wygeneruj CalVer.
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=v$(date +'%Y.%m.%d')-${{ github.run_number }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
