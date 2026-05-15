@@ -100,4 +100,20 @@ class CargoBuilder(BaseBuilder):
         
         self.build(cmd, config)
 
+class GoBuilder(BaseBuilder):
+    def __init__(self):
+        super().__init__("Go")
+
+    def run(self, config: GitrmYaml):
+        self.prepare(config, ["go", "version"])
+        cmd = ["go", "build"]
+
+        if config.build.output_path:
+            cmd.extend(["-o", config.build.output_path])
+
+        if config.build.flags:
+            cmd.extend(config.build.flags)
+
+        self.build(cmd, config)
+
         
