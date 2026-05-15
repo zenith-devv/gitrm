@@ -27,7 +27,6 @@ NUITKA_FLAGS=(
     "--onefile"
     "--standalone"
     "--remove-output"
-    "--lto=yes"
     "--product-name=gitrm"
     "--file-version=$WIN_VERSION"
     "--show-scons"
