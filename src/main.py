@@ -1,7 +1,6 @@
 import os
 import sys
 import typer
-import shutil
 import subprocess
 
 from pathlib import Path
@@ -9,7 +8,7 @@ from loguru import logger
 from utils import load_config, make_config
 from builders import get_builder, run_custom_script
 
-__version__ = "v0.7.2-beta (build 2026.05.16-1257)"
+__version__ = "v0.7.3-beta (build 2026.05.16-2010)"
 
 logger.remove()
 logger.add(sys.stderr, format="<level>{level: ^8}</level>| {message}")
@@ -60,16 +59,16 @@ def clone(
 
     os.chdir(target_dir)
 
-    config_file = "gitrm.yaml"
-    if os.path.exists(config_file):
+    config_file = target_dir / "gitrm.yaml" 
+    if config_file.exists():
         logger.info(f"Found {config_file}, starting automatic build...")
         
-        build() 
-        
-        if not keep_source:
-            os.chdir("..")
-            shutil.rmtree(target_dir)
-            logger.info("Source removed")
+        current_dir = os.getcwd()
+        try:
+            os.chdir(target_dir)
+            build()
+        finally:
+            os.chdir(current_dir)
     else:
         logger.warning(f"No {config_file} found in the repository. Exiting")
 
