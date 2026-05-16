@@ -7,7 +7,7 @@ from models import GitrmYaml
 from loguru import logger
 
 def get_builder(config: GitrmYaml):
-    logger.info(f"Detecting builder for \'{config.build.project_name}\'...")
+    logger.info(f"Detecting builder for \'{config.build.project_name\'}...")
 
     if config.build.main_file:
         main_file = config.build.main_file.lower()
