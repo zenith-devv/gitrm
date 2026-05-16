@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 GIT_TAG=$(git describe --tags --always)
 BUILD_DATE=$(date +'%Y.%m.%d-%H%M')
-FULL_VERSION="$GIT_TAG (build: $BUILD_DATE)"
+FULL_VERSION="$GIT_TAG (build $BUILD_DATE)"
 
 sed -i "s/__version__ = .*/__version__ = \"$FULL_VERSION\"/" src/main.py
 WIN_VERSION=$(echo $BUILD_VERSION | tr '-' '.' | cut -d'.' -f1-4)

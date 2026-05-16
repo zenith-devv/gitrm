@@ -109,8 +109,11 @@ class BaseBuilder():
             logger.error(f"Build failed for \'{config.build.project_name}\' (exit code {build_result.returncode})")
             sys.exit(1)
 
-        logger.success(f"Building \'{config.build.project_name}\' finished successfully, output located in {config.build.output_path}")
-
+        if config.build.output_path:
+            logger.success(f"Building \'{config.build.project_name}\' finished successfully, output located in {config.build.output_path}")
+        else:
+            logger.success(f"Building \'{config.build.project_name}\' finished successfully")
+            
 class DotnetBuilder(BaseBuilder):
     def __init__(self):
         super().__init__("Dotnet")
