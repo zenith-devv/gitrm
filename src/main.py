@@ -9,7 +9,7 @@ from loguru import logger
 from utils import load_config, make_config
 from builders import get_builder, run_custom_script
 
-__version__ = "v0.6-beta-19-gbd1e7bd (build 2026.05.16-1217)"
+__version__ = "v0.6-beta-20-g5ce9a91 (build 2026.05.16-1223)"
 
 logger.remove()
 logger.add(sys.stderr, format="<level>{level: ^S8}</level>| {message}")
@@ -20,7 +20,6 @@ app = typer.Typer(
 )
 
 @app.command()
-@logger.catch(onerror=lambda _: typer.Exit(code=1))
 def build():
     """
     Read gitrm.yaml and compile project to executable.
@@ -41,7 +40,6 @@ def build():
         raise typer.Exit(code=1)
 
 @app.command()
-@logger.catch(onerror=lambda _: typer.Exit(code=1))
 def clone(
     url: str, 
     keep_source: bool = typer.Option(False, "--keep", "-k", help="Keep the source code after building")
@@ -77,7 +75,6 @@ def clone(
 
 
 @app.command()
-@logger.catch(onerror=lambda _: typer.Exit(code=1))
 def config():
     """
     Create an empty gitrm.yaml template.
@@ -85,7 +82,6 @@ def config():
     make_config("gitrm.yaml")
 
 @app.command()
-@logger.catch(onerror=lambda _: typer.Exit(code=1))
 def version():
     """
     Display gitrm version.
