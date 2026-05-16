@@ -40,10 +40,7 @@ def build():
         raise typer.Exit(code=1)
 
 @app.command()
-def clone(
-    url: str, 
-    keep_source: bool = typer.Option(False, "--keep", "-k", help="Keep the source code after building")
-):
+def clone(url: str):
     """
     Clone a repository and automatically build the project (if gitrm.yaml exists)
     """
@@ -58,22 +55,17 @@ def clone(
         logger.error("Failed to clone repository")
         raise typer.Exit(1)
 
-    os.chdir(target_dir)
-
-    config_file = "gitrm.yaml"
-    if os.path.exists(config_file):
+    config_file = target_dir / "gitrm."
+    if config_file.exists():
         logger.info(f"Found {config_file}, starting automatic build...")
-        
-        build() 
-        
-        if not keep_source:
-            os.chdir("..")
-            shutil.rmtree(target_dir)
-            logger.info("Source removed")
-    else:
-        logger.warning(f"No {config_file} found in the repository. Exiting")
 
-
+    current_dir = os.getcwd()
+    try:
+        os.chdir(target_dir)
+        build()
+    finally:
+        os.chdir(current_dir)
+       
 @app.command()
 def config():
     """
