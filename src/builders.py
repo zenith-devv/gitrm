@@ -139,8 +139,8 @@ class CargoBuilder(BaseBuilder):
         cmd = ["cargo", "build"]
 
         if config.build.output_path:
-            cmd.extend(config.build.output_path)
-
+            cmd.extend(["--target-dir", config.build.output_path])
+            
         if config.build.flags:
             cmd.extend(config.build.flags.split())
         
